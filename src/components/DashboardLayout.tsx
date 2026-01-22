@@ -79,22 +79,24 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 antialiased">
       {/* Header - Common for both roles */}
-      <header className="sticky top-0 z-10 border-b bg-white shadow-sm">
-        <div className="flex h-16 items-center justify-between px-6">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded bg-primary text-white flex items-center justify-center font-bold">
-              BW
+      <Link href={"/"}>
+        <header className="sticky top-0 z-10 border-b bg-white shadow-sm">
+          <div className="flex h-16 items-center justify-between px-6">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded bg-primary text-white flex items-center justify-center font-bold">
+                BW
+              </div>
+              <h1 className="text-xl font-semibold">Binary Wholesale</h1>
             </div>
-            <h1 className="text-xl font-semibold">Binary Wholesale</h1>
-          </div>
 
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm">
-              {user?.fullName || "User"}
-            </Button>
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="sm">
+                {user?.fullName || "User"}
+              </Button>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      </Link>
 
       {/* Main Content Area with Sidebar */}
       <div className="flex flex-1">

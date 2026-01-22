@@ -20,7 +20,7 @@ const recommendedProducts = [
     category: "grocery",
     description: "Premium quality sugar",
     images:
-      "https://images.unsplash.com/photo-1617890686219-509e1a0596e2?w=400",
+      "https://lirp.cdn-website.com/cbf48001/dms3rep/multi/opt/Different+Types+of+Sugar-640w.jpg",
     stock: 100,
     moq: 1,
     variants: ["5kg"],
@@ -34,7 +34,7 @@ const recommendedProducts = [
     category: "beauty",
     description: "Anti-dandruff shampoo",
     images:
-      "https://images.unsplash.com/photo-1608248597788-35336b9d0d5b?w=400",
+      "https://cloudinary.images-iherb.com/image/upload/f_auto,q_auto:eco/images/hds/hds94959/y/24.jpg",
     stock: 50,
     moq: 2,
     variants: ["400ml"],
