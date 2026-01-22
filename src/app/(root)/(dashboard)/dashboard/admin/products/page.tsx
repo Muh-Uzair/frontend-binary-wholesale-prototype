@@ -42,8 +42,19 @@ import { Plus, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"; // Added import for Shadcn AlertDialog
 
-// Zod schema
+// Zod schema (same as before)
 const formSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters").trim(),
   description: z.string().min(1, "Description is required").trim(),
@@ -86,8 +97,10 @@ export default function DashboardAdminProducts() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<IProduct | null>(null);
+  const [deletingProduct, setDeletingProduct] = useState<IProduct | null>(null); // New state for product to delete
+  const [isDeleting, setIsDeleting] = useState(false); // New state for delete loading
 
-  const limit = 5;
+  const limit = 10;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -168,12 +181,12 @@ export default function DashboardAdminProducts() {
       fetchProducts();
     }, 500);
     return () => clearTimeout(timer);
-  }, [search, fetchProducts]);
+  }, [search]);
 
   // Fetch on page change
   useEffect(() => {
     fetchProducts();
-  }, [page, fetchProducts]);
+  }, [fetchProducts]);
 
   const onSubmit = async (values: FormValues) => {
     try {
@@ -229,6 +242,33 @@ export default function DashboardAdminProducts() {
       toast.error(error.message || "Failed to save product");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // New delete function
+  const handleDelete = async (product: IProduct) => {
+    try {
+      setIsDeleting(true);
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/products/${product._id}`,
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.message || "Failed to delete product");
+      }
+
+      toast.success("Product deleted successfully!");
+      fetchProducts(); // Refresh the list
+    } catch (error: any) {
+      toast.error(error.message || "Failed to delete product");
+    } finally {
+      setIsDeleting(false);
+      setDeletingProduct(null); // Close the dialog
     }
   };
 
@@ -501,7 +541,7 @@ export default function DashboardAdminProducts() {
                   <TableCell className="flex items-center gap-2">
                     {product.stock}
                     <Badge
-                      variant={product.inStock ? "success" : "destructive"}
+                      variant={product.inStock ? "default" : "destructive"}
                       className="text-xs"
                     >
                       {product.inStock ? "In Stock" : "Out of Stock"}
@@ -517,15 +557,45 @@ export default function DashboardAdminProducts() {
                       <Edit className="h-4 w-4 mr-1" />
                       Edit
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-600 hover:text-red-700"
-                      // TODO: Add delete functionality later
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Delete
-                    </Button>
+                    {/* Delete with AlertDialog confirmation */}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700"
+                          onClick={() => setDeletingProduct(product)} // Set product to delete
+                          disabled={isDeleting}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Are you absolutely sure?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently
+                            delete the product &quot;{deletingProduct?.name}
+                            &quot;.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-red-500 hover:bg-red-500"
+                            onClick={() =>
+                              deletingProduct && handleDelete(deletingProduct)
+                            }
+                            disabled={isDeleting}
+                          >
+                            {isDeleting ? "Deleting..." : "Confirm"}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </TableCell>
                 </TableRow>
               ))
