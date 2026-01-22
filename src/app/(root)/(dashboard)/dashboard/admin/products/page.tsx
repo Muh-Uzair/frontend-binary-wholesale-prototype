@@ -38,11 +38,12 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Plus } from "lucide-react";
+import { Plus, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
+import { Badge } from "@/components/ui/badge";
 
-// Zod schema (same as before)
+// Zod schema
 const formSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters").trim(),
   description: z.string().min(1, "Description is required").trim(),
@@ -59,7 +60,6 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-// Product interface matching your backend response
 export interface IProduct {
   _id: string;
   name: string;
@@ -83,10 +83,11 @@ export default function DashboardAdminProducts() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
-  const [isCreating, setIsCreating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<IProduct | null>(null);
 
-  const limit = 5; // items per page (same as your table)
+  const limit = 5;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -102,7 +103,37 @@ export default function DashboardAdminProducts() {
     },
   });
 
-  // Fetch products from API with pagination & search
+  // Reset form when dialog opens (create or edit mode)
+  useEffect(() => {
+    if (isDialogOpen) {
+      if (editingProduct) {
+        // Edit mode - populate form with product data
+        form.reset({
+          name: editingProduct.name,
+          description: editingProduct.description,
+          category: editingProduct.category as "grocery" | "beauty",
+          brand: editingProduct.brand || "",
+          images: editingProduct.images,
+          variants: editingProduct.variants,
+          stock: editingProduct.stock,
+          moq: editingProduct.moq,
+        });
+      } else {
+        // Create mode - reset to defaults
+        form.reset({
+          name: "",
+          description: "",
+          category: "grocery",
+          brand: "",
+          images: "",
+          variants: [""],
+          stock: 0,
+          moq: 1,
+        });
+      }
+    }
+  }, [isDialogOpen, editingProduct, form]);
+
   const fetchProducts = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -111,8 +142,7 @@ export default function DashboardAdminProducts() {
       const response = await fetch(url, {
         headers: {
           "Content-Type": "application/json",
-          // Agar auth token chahiye to yahan add kar dena
-          // Authorization: `Bearer ${token}`,
+          // Authorization: `Bearer ${token}`, // add if needed
         },
       });
 
@@ -122,7 +152,6 @@ export default function DashboardAdminProducts() {
       }
 
       const result = await response.json();
-
       setProducts(result.data || []);
       setTotalPages(result.pagination?.totalPages || 1);
     } catch (error: any) {
@@ -132,55 +161,85 @@ export default function DashboardAdminProducts() {
     }
   }, [page, search]);
 
-  // Debounced search (har key press pe nahi, 500ms wait karega)
+  // Debounced search
   useEffect(() => {
     const timer = setTimeout(() => {
-      setPage(1); // search change hone pe page 1 pe reset
+      setPage(1);
       fetchProducts();
     }, 500);
-
     return () => clearTimeout(timer);
   }, [search, fetchProducts]);
 
-  // Initial fetch + page change pe call
+  // Fetch on page change
   useEffect(() => {
     fetchProducts();
   }, [page, fetchProducts]);
 
   const onSubmit = async (values: FormValues) => {
     try {
-      setIsCreating(true);
-      const submittedData = {
+      setIsSubmitting(true);
+
+      const payload = {
         ...values,
         inStock: values.stock > 0,
-        createdBy: user?._id as string,
+        // createdBy only needed for create - backend might ignore for update
+        ...(editingProduct ? {} : { createdBy: user?._id as string }),
       };
 
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(submittedData),
-        },
-      );
+      let response: Response;
+
+      if (editingProduct) {
+        // PATCH for update
+        response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/products/${editingProduct._id}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          },
+        );
+      } else {
+        // POST for create
+        response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          },
+        );
+      }
 
       if (!response.ok) {
         const err = await response.json();
-        throw new Error(err.message || "Failed to create product");
+        throw new Error(err.message || "Failed to save product");
       }
 
-      toast.success("Product created successfully!");
-      form.reset();
-      setIsDialogOpen(false);
+      toast.success(
+        editingProduct
+          ? "Product updated successfully!"
+          : "Product created successfully!",
+      );
 
-      // Refresh list after create
+      setIsDialogOpen(false);
+      setEditingProduct(null);
+      form.reset();
       fetchProducts();
     } catch (error: any) {
-      toast.error(error.message || "Product creation failed");
+      toast.error(error.message || "Failed to save product");
     } finally {
-      setIsCreating(false);
+      setIsSubmitting(false);
     }
+  };
+
+  const handleEdit = (product: IProduct) => {
+    setEditingProduct(product);
+    setIsDialogOpen(true);
+  };
+
+  const handleCreate = () => {
+    setEditingProduct(null);
+    setIsDialogOpen(true);
   };
 
   if (isLoading && products.length === 0) {
@@ -198,7 +257,7 @@ export default function DashboardAdminProducts() {
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => setIsDialogOpen(true)}>
+            <Button onClick={handleCreate}>
               <Plus className="mr-2 h-4 w-4" />
               Create Product
             </Button>
@@ -206,7 +265,9 @@ export default function DashboardAdminProducts() {
 
           <DialogContent className="sm:max-w-[640px]">
             <DialogHeader>
-              <DialogTitle>Create New Product</DialogTitle>
+              <DialogTitle>
+                {editingProduct ? "Edit Product" : "Create New Product"}
+              </DialogTitle>
             </DialogHeader>
 
             <Form {...form}>
@@ -377,8 +438,16 @@ export default function DashboardAdminProducts() {
                   )}
                 />
 
-                <Button type="submit" className="w-full mt-6">
-                  {isCreating ? "Creating..." : "Create Product"}
+                <Button
+                  type="submit"
+                  className="w-full mt-6"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting
+                    ? "Saving..."
+                    : editingProduct
+                      ? "Update Product"
+                      : "Create Product"}
                 </Button>
               </form>
             </Form>
@@ -429,27 +498,32 @@ export default function DashboardAdminProducts() {
                   </TableCell>
                   <TableCell>{product.brand || "—"}</TableCell>
                   <TableCell>{product.variants.join(", ")}</TableCell>
-                  <TableCell>
-                    {product.stock} (
-                    <span
-                      className={
-                        product.inStock ? "text-green-600" : "text-red-600"
-                      }
+                  <TableCell className="flex items-center gap-2">
+                    {product.stock}
+                    <Badge
+                      variant={product.inStock ? "success" : "destructive"}
+                      className="text-xs"
                     >
                       {product.inStock ? "In Stock" : "Out of Stock"}
-                    </span>
-                    )
+                    </Badge>
                   </TableCell>
                   <TableCell>{product.moq}</TableCell>
                   <TableCell className="text-right space-x-2">
-                    <Button variant="ghost" size="sm">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEdit(product)}
+                    >
+                      <Edit className="h-4 w-4 mr-1" />
                       Edit
                     </Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       className="text-red-600 hover:text-red-700"
+                      // TODO: Add delete functionality later
                     >
+                      <Trash2 className="h-4 w-4 mr-1" />
                       Delete
                     </Button>
                   </TableCell>
