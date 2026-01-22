@@ -82,7 +82,7 @@ export default function DashboardAdminProducts() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -185,7 +185,7 @@ export default function DashboardAdminProducts() {
 
   if (isLoading && products.length === 0) {
     return (
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-full items-center justify-center">
         <Spinner />
       </div>
     );
@@ -214,13 +214,170 @@ export default function DashboardAdminProducts() {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-5 pt-4"
               >
-                {/* ... your form fields same as before ... */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Product Name *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g. Cooking Oil 5L" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <Button
-                  type="submit"
-                  className="w-full mt-6"
-                  disabled={isCreating}
-                >
+                  <FormField
+                    control={form.control}
+                    name="brand"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Brand *</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g. Mezan, Dove, ..."
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description *</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Describe the product (features, benefits, usage, etc.)..."
+                          rows={4}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category *</FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="grocery">Grocery</SelectItem>
+                            <SelectItem value="beauty">Beauty</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="moq"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Minimum Order Quantity (MOQ) *</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={1}
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="stock"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Stock Quantity *</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={0}
+                            {...field}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="images"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Main Image URL *</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="https://example.com/product-image.jpg"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="variants"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Variants (comma separated) *</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="5L, 10L, 500ml, Pack of 6"
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value
+                                .split(",")
+                                .map((s) => s.trim())
+                                .filter(Boolean),
+                            )
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <Button type="submit" className="w-full mt-6">
                   {isCreating ? "Creating..." : "Create Product"}
                 </Button>
               </form>
