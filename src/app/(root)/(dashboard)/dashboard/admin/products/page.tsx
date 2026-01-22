@@ -52,9 +52,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"; // Added import for Shadcn AlertDialog
+} from "@/components/ui/alert-dialog";
 
-// Zod schema (same as before)
+// Updated Zod schema with price field
 const formSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters").trim(),
   description: z.string().min(1, "Description is required").trim(),
@@ -65,6 +65,7 @@ const formSchema = z.object({
     .min(1, "At least one image URL is required")
     .url("Please enter a valid URL"),
   variants: z.string().array().min(1, "At least one variant is required"),
+  price: z.number().min(0, "Price cannot be negative"),
   stock: z.number().min(0, "Stock cannot be negative"),
   moq: z.number().min(1, "MOQ must be at least 1"),
 });
@@ -79,6 +80,7 @@ export interface IProduct {
   brand: string;
   images: string;
   variants: string[];
+  price: number;
   createdBy: string;
   stock: number;
   inStock: boolean;
@@ -97,8 +99,8 @@ export default function DashboardAdminProducts() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<IProduct | null>(null);
-  const [deletingProduct, setDeletingProduct] = useState<IProduct | null>(null); // New state for product to delete
-  const [isDeleting, setIsDeleting] = useState(false); // New state for delete loading
+  const [deletingProduct, setDeletingProduct] = useState<IProduct | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const limit = 10;
 
@@ -111,6 +113,7 @@ export default function DashboardAdminProducts() {
       brand: "",
       images: "",
       variants: [""],
+      price: 0,
       stock: 0,
       moq: 1,
     },
@@ -128,6 +131,7 @@ export default function DashboardAdminProducts() {
           brand: editingProduct.brand || "",
           images: editingProduct.images,
           variants: editingProduct.variants,
+          price: editingProduct.price || 0,
           stock: editingProduct.stock,
           moq: editingProduct.moq,
         });
@@ -140,6 +144,7 @@ export default function DashboardAdminProducts() {
           brand: "",
           images: "",
           variants: [""],
+          price: 0,
           stock: 0,
           moq: 1,
         });
@@ -155,7 +160,6 @@ export default function DashboardAdminProducts() {
       const response = await fetch(url, {
         headers: {
           "Content-Type": "application/json",
-          // Authorization: `Bearer ${token}`, // add if needed
         },
       });
 
@@ -195,14 +199,12 @@ export default function DashboardAdminProducts() {
       const payload = {
         ...values,
         inStock: values.stock > 0,
-        // createdBy only needed for create - backend might ignore for update
         ...(editingProduct ? {} : { createdBy: user?._id as string }),
       };
 
       let response: Response;
 
       if (editingProduct) {
-        // PATCH for update
         response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/v1/products/${editingProduct._id}`,
           {
@@ -212,7 +214,6 @@ export default function DashboardAdminProducts() {
           },
         );
       } else {
-        // POST for create
         response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/api/v1/products`,
           {
@@ -245,7 +246,6 @@ export default function DashboardAdminProducts() {
     }
   };
 
-  // New delete function
   const handleDelete = async (product: IProduct) => {
     try {
       setIsDeleting(true);
@@ -263,12 +263,12 @@ export default function DashboardAdminProducts() {
       }
 
       toast.success("Product deleted successfully!");
-      fetchProducts(); // Refresh the list
+      fetchProducts();
     } catch (error: any) {
       toast.error(error.message || "Failed to delete product");
     } finally {
       setIsDeleting(false);
-      setDeletingProduct(null); // Close the dialog
+      setDeletingProduct(null);
     }
   };
 
@@ -303,7 +303,7 @@ export default function DashboardAdminProducts() {
             </Button>
           </DialogTrigger>
 
-          <DialogContent className="sm:max-w-[640px]">
+          <DialogContent className="sm:max-w-[640px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingProduct ? "Edit Product" : "Create New Product"}
@@ -394,14 +394,16 @@ export default function DashboardAdminProducts() {
 
                   <FormField
                     control={form.control}
-                    name="moq"
+                    name="price"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Minimum Order Quantity (MOQ) *</FormLabel>
+                        <FormLabel>Price (PKR) *</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
-                            min={1}
+                            min={0}
+                            step="0.01"
+                            placeholder="0.00"
                             {...field}
                             onChange={(e) =>
                               field.onChange(Number(e.target.value))
@@ -438,14 +440,18 @@ export default function DashboardAdminProducts() {
 
                   <FormField
                     control={form.control}
-                    name="images"
+                    name="moq"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Main Image URL *</FormLabel>
+                        <FormLabel>Minimum Order Quantity (MOQ) *</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="https://example.com/product-image.jpg"
+                            type="number"
+                            min={1}
                             {...field}
+                            onChange={(e) =>
+                              field.onChange(Number(e.target.value))
+                            }
                           />
                         </FormControl>
                         <FormMessage />
@@ -453,6 +459,23 @@ export default function DashboardAdminProducts() {
                     )}
                   />
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="images"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Main Image URL *</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="https://example.com/product-image.jpg"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}
@@ -513,6 +536,7 @@ export default function DashboardAdminProducts() {
               <TableHead>Name</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Brand</TableHead>
+              <TableHead>Price</TableHead>
               <TableHead>Variants</TableHead>
               <TableHead>Stock</TableHead>
               <TableHead>MOQ</TableHead>
@@ -523,7 +547,7 @@ export default function DashboardAdminProducts() {
             {products.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={8}
                   className="text-center py-10 text-muted-foreground"
                 >
                   No products found
@@ -537,6 +561,9 @@ export default function DashboardAdminProducts() {
                     {product.category}
                   </TableCell>
                   <TableCell>{product.brand || "—"}</TableCell>
+                  <TableCell className="font-semibold">
+                    ₨{product.price?.toLocaleString() || "0"}
+                  </TableCell>
                   <TableCell>{product.variants.join(", ")}</TableCell>
                   <TableCell className="flex items-center gap-2">
                     {product.stock}
@@ -557,14 +584,13 @@ export default function DashboardAdminProducts() {
                       <Edit className="h-4 w-4 mr-1" />
                       Edit
                     </Button>
-                    {/* Delete with AlertDialog confirmation */}
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
                           variant="ghost"
                           size="sm"
                           className="text-red-600 hover:text-red-700"
-                          onClick={() => setDeletingProduct(product)} // Set product to delete
+                          onClick={() => setDeletingProduct(product)}
                           disabled={isDeleting}
                         >
                           <Trash2 className="h-4 w-4 mr-1" />
@@ -585,7 +611,7 @@ export default function DashboardAdminProducts() {
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
                           <AlertDialogAction
-                            className="bg-red-500 hover:bg-red-500"
+                            className="bg-red-500 hover:bg-red-600"
                             onClick={() =>
                               deletingProduct && handleDelete(deletingProduct)
                             }
