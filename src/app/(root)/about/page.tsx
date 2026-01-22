@@ -4,25 +4,19 @@ import React from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
-  ShoppingBag,
-  Package,
+  Users,
+  Target,
+  HeartHandshake,
   Truck,
   ShieldCheck,
-  Store,
-  CreditCard,
-  Clock,
   Star,
   ArrowRight,
-  Users,
-  CheckCircle,
-  ThumbsUp,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
-export default function HomePage() {
+export default function AboutPage() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Navbar */}
+      {/* Navbar - Same as homepage */}
       <header className="sticky top-0 z-50 w-full border-b bg-white shadow-sm">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3">
@@ -47,10 +41,7 @@ export default function HomePage() {
             >
               Products
             </Link>
-            <Link
-              href="/about"
-              className="text-gray-700 hover:text-indigo-600 font-medium"
-            >
+            <Link href="/about" className="text-indigo-600 font-medium">
               About Us
             </Link>
           </nav>
@@ -67,232 +58,127 @@ export default function HomePage() {
       </header>
 
       {/* Hero Section */}
-      <section className="flex-1 bg-gradient-to-br from-indigo-50 via-white to-blue-50 py-24 md:py-40">
+      <section className="bg-gradient-to-br from-indigo-50 to-white py-20 md:py-32">
         <div className="container mx-auto px-6 text-center">
-          <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-            Pakistan&apos;s No.1 B2B Wholesale Platform <br />
-            <span className="text-indigo-600">Grocery & Beauty Products</span>
-          </h2>
-          <p className="text-xl md:text-2xl text-gray-700 mb-10 max-w-4xl mx-auto">
-            Best wholesale rates for retailers, wide range of products in one
-            place, fast delivery across Islamabad and all over Pakistan, and
-            100% trusted payments.
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            About Binary Wholesale
+          </h1>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            We are a dedicated B2B wholesale platform connecting suppliers with
+            retailers across Pakistan. Our mission is to make bulk buying
+            simple, affordable, and reliable for every shop owner.
           </p>
-
-          <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <Link href="/signup">
-              <Button size="lg" className="text-lg px-12 py-7">
-                Free Sign Up – Get Started Today
-              </Button>
-            </Link>
-            <Link href="/products">
-              <Button
-                size="lg"
-                variant="outline"
-                className="text-lg px-12 py-7"
-              >
-                Browse Products
-              </Button>
-            </Link>
-          </div>
         </div>
       </section>
 
-      {/* Popular Products */}
+      {/* Our Story */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6">
-          <h3 className="text-4xl font-bold text-center mb-6">
-            Our Top Selling Products
-          </h3>
-          <p className="text-center text-gray-600 mb-12 text-lg max-w-3xl mx-auto">
-            These are the products retailers order every day – best quality at
-            the lowest rates.
-          </p>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Cooking Oil 5L",
-                icon: ShoppingBag,
-                price: "₹1,200",
-                moq: "MOQ: 5",
-              },
-              {
-                name: "Fairness Cream 50g",
-                icon: Star,
-                price: "₹350",
-                moq: "MOQ: 10",
-              },
-              {
-                name: "Basmati Rice 10kg",
-                icon: Package,
-                price: "₹2,800",
-                moq: "MOQ: 2",
-              },
-              {
-                name: "Shampoo 400ml",
-                icon: Clock,
-                price: "₹450",
-                moq: "MOQ: 6",
-              },
-              {
-                name: "Sugar 50kg Bag",
-                icon: CreditCard,
-                price: "₹4,500",
-                moq: "MOQ: 1",
-              },
-              {
-                name: "Face Wash 100ml",
-                icon: ThumbsUp,
-                price: "₹280",
-                moq: "MOQ: 12",
-              },
-            ].map((product, idx) => (
-              <div
-                key={idx}
-                className="border rounded-xl p-6 hover:shadow-xl transition-all duration-300 text-center bg-white"
-              >
-                <div className="mx-auto w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center mb-6">
-                  <product.icon className="h-10 w-10 text-indigo-600" />
-                </div>
-                <h4 className="text-xl font-semibold mb-3">{product.name}</h4>
-                <p className="text-indigo-600 font-bold text-2xl mb-2">
-                  {product.price}
-                </p>
-                <Badge variant="outline" className="mb-4 text-base">
-                  {product.moq}
-                </Badge>
-                <Button className="w-full mt-2">Add to Cart</Button>
-              </div>
-            ))}
-          </div>
-
-          <div className="text-center mt-12">
-            <Link href="/products">
-              <Button
-                variant="outline"
-                size="lg"
-                className="gap-3 text-lg px-10"
-              >
-                View More Products <ArrowRight className="h-5 w-5" />
-              </Button>
-            </Link>
+          <div className="max-w-4xl mx-auto text-center space-y-8">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+              Our Story
+            </h2>
+            <p className="text-lg text-gray-700 leading-relaxed">
+              Founded in Islamabad, Binary Wholesale was born from the vision of
+              making wholesale trading easier for small and medium retailers. We
+              saw retailers struggling with inconsistent supply, high prices,
+              and delayed deliveries. So we built a platform that solves these
+              problems – offering verified suppliers, transparent pricing, fast
+              delivery, and excellent support.
+            </p>
+            <p className="text-lg text-gray-700 leading-relaxed">
+              Today, we proudly serve hundreds of retailers with grocery, beauty
+              products, cosmetics, and daily essentials – all under one roof, at
+              the best wholesale rates in Pakistan.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
+      {/* Mission & Vision */}
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-6">
-          <h3 className="text-4xl font-bold text-center mb-16">
-            How It Works – Get Started in Minutes
-          </h3>
-
-          <div className="grid md:grid-cols-4 gap-8">
-            {[
-              {
-                step: "1",
-                title: "Sign Up Free",
-                desc: "Create your account in just 2 minutes",
-                icon: Users,
-              },
-              {
-                step: "2",
-                title: "Browse Products",
-                desc: "Search and explore categories",
-                icon: Package,
-              },
-              {
-                step: "3",
-                title: "Place Order",
-                desc: "Add to cart and checkout",
-                icon: ShoppingBag,
-              },
-              {
-                step: "4",
-                title: "Delivery & Payment",
-                desc: "Fast delivery to your shop and easy payment",
-                icon: Truck,
-              },
-            ].map((item, idx) => (
-              <div key={idx} className="text-center space-y-6 relative">
-                <div className="mx-auto w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center">
-                  <item.icon className="h-10 w-10 text-indigo-600" />
-                </div>
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xl">
-                  {item.step}
-                </div>
-                <h4 className="text-2xl font-semibold">{item.title}</h4>
-                <p className="text-gray-600 text-lg">{item.desc}</p>
+          <div className="grid md:grid-cols-2 gap-12">
+            <div className="bg-white p-8 rounded-xl shadow-sm">
+              <div className="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center mb-6">
+                <Target className="h-8 w-8 text-indigo-600" />
               </div>
-            ))}
+              <h3 className="text-2xl font-bold mb-4">Our Mission</h3>
+              <p className="text-gray-700 text-lg">
+                To empower retailers by providing a reliable, transparent, and
+                efficient wholesale platform that saves time, reduces costs, and
+                helps businesses grow.
+              </p>
+            </div>
+
+            <div className="bg-white p-8 rounded-xl shadow-sm">
+              <div className="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center mb-6">
+                <HeartHandshake className="h-8 w-8 text-indigo-600" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4">Our Vision</h3>
+              <p className="text-gray-700 text-lg">
+                To become the most trusted B2B wholesale partner in Pakistan,
+                serving thousands of retailers with unmatched variety, quality,
+                and service.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Why Choose Us */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6">
-          <h3 className="text-4xl font-bold text-center mb-16">
-            What Our Retailers Say
+          <h3 className="text-3xl md:text-4xl font-bold text-center mb-16">
+            Why Retailers Choose Us
           </h3>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Ahmed Khan",
-                shop: "Khan General Store",
-                text: "Best rates and super fast delivery. My business doubled in just 6 months!",
-              },
-              {
-                name: "Saba Ahmed",
-                shop: "Beauty Corner",
-                text: "Excellent variety in beauty products. My customers are always happy.",
-              },
-              {
-                name: "Rizwan Ali",
-                shop: "Ali Kiryana",
-                text: "Easy payments and very helpful support team. Highly recommended!",
-              },
-            ].map((review, idx) => (
-              <div
-                key={idx}
-                className="border rounded-xl p-8 bg-gray-50 hover:shadow-lg transition-shadow"
-              >
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                    <Users className="h-6 w-6 text-indigo-600" />
-                  </div>
-                  <div>
-                    <p className="font-semibold">{review.name}</p>
-                    <p className="text-sm text-gray-600">{review.shop}</p>
-                  </div>
-                </div>
-                <p className="text-gray-700 italic">
-                  &quot;{review.text}&quot;
-                </p>
-                <div className="flex text-yellow-400 mt-4">
-                  <Star className="h-5 w-5 fill-current" />
-                  <Star className="h-5 w-5 fill-current" />
-                  <Star className="h-5 w-5 fill-current" />
-                  <Star className="h-5 w-5 fill-current" />
-                  <Star className="h-5 w-5 fill-current" />
-                </div>
+          <div className="grid md:grid-cols-3 gap-10">
+            <div className="text-center space-y-6">
+              <div className="mx-auto w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center">
+                <Truck className="h-10 w-10 text-indigo-600" />
               </div>
-            ))}
+              <h4 className="text-2xl font-semibold">
+                Fast & Reliable Delivery
+              </h4>
+              <p className="text-gray-700 text-lg">
+                We deliver across major cities within 24-48 hours.
+              </p>
+            </div>
+
+            <div className="text-center space-y-6">
+              <div className="mx-auto w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center">
+                <ShieldCheck className="h-10 w-10 text-indigo-600" />
+              </div>
+              <h4 className="text-2xl font-semibold">
+                100% Secure & Transparent
+              </h4>
+              <p className="text-gray-700 text-lg">
+                Verified suppliers, clear pricing, and safe payment options.
+              </p>
+            </div>
+
+            <div className="text-center space-y-6">
+              <div className="mx-auto w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center">
+                <Star className="h-10 w-10 text-indigo-600" />
+              </div>
+              <h4 className="text-2xl font-semibold">Best Wholesale Prices</h4>
+              <p className="text-gray-700 text-lg">
+                Competitive rates with no hidden fees – save more on every
+                order.
+              </p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Call to Action */}
-      <section className="py-24 bg-indigo-600 text-white">
+      <section className="py-20 bg-indigo-600 text-white">
         <div className="container mx-auto px-6 text-center">
-          <h3 className="text-4xl md:text-5xl font-bold mb-8">
-            Take Your Business to the Next Level Today
-          </h3>
-          <p className="text-xl mb-12 max-w-3xl mx-auto opacity-90">
-            Free sign up, no hidden fees, and new offers every day. Join
-            thousands of happy retailers across Pakistan.
+          <h3 className="text-4xl font-bold mb-6">Ready to Partner with Us?</h3>
+          <p className="text-xl mb-10 max-w-3xl mx-auto opacity-90">
+            Join Binary Wholesale today and take your retail business to the
+            next level with better prices, faster delivery, and trusted supply.
           </p>
           <Link href="/signup">
             <Button
@@ -300,7 +186,7 @@ export default function HomePage() {
               variant="secondary"
               className="text-xl px-16 py-8 bg-white text-indigo-600 hover:bg-gray-100"
             >
-              Sign Up Now
+              Sign Up Now – It&apos;s Free
             </Button>
           </Link>
         </div>
@@ -469,7 +355,6 @@ export default function HomePage() {
                   <span>+92 300 1234567</span>
                 </li>
               </ul>
-
               <div className="mt-8">
                 <h6 className="text-sm font-medium text-gray-400 mb-4">
                   Follow Us

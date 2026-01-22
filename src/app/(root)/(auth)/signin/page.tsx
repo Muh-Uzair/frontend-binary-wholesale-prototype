@@ -79,6 +79,7 @@ export default function SignInPage() {
         email: data?.email,
         role: data?.role,
         phone: data?.phone,
+        _id: data?._id,
       });
 
       if (data?.role === "admin") {

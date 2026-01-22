@@ -2,7 +2,7 @@
 
 import React, { ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation"; // <-- yeh add karo
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
@@ -16,19 +16,69 @@ import { useUserStore } from "@/store/userStore";
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const { user } = useUserStore();
-  const pathname = usePathname(); // current URL mil jayegi
+  const pathname = usePathname();
 
-  console.log("user ------------------------------\n", user);
-
-  // Helper function to check if link is active
+  // Helper to check if the current path is active
   const isActive = (path: string) => {
-    // exact match ya sub-paths ke liye startsWith use kar sakte ho
     return pathname === path || pathname.startsWith(path + "/");
   };
 
+  // Define sidebar items based on user role
+  const sidebarItems =
+    user?.role === "admin"
+      ? [
+          {
+            label: "Dashboard",
+            icon: LayoutDashboard,
+            href: "/dashboard/admin/dashboard",
+          },
+          {
+            label: "Products",
+            icon: Package,
+            href: "/dashboard/admin/products",
+          },
+          {
+            label: "Orders",
+            icon: ShoppingCart,
+            href: "/dashboard/admin/orders",
+          },
+          {
+            label: "Retailers",
+            icon: Users,
+            href: "/dashboard/admin/retailers",
+          },
+          {
+            label: "Settings",
+            icon: Settings,
+            href: "/dashboard/admin/settings",
+          },
+        ]
+      : [
+          {
+            label: "Dashboard",
+            icon: LayoutDashboard,
+            href: "/dashboard/retailer/dashboard",
+          },
+          {
+            label: "Products",
+            icon: Package,
+            href: "/dashboard/retailer/products",
+          },
+          {
+            label: "Orders",
+            icon: ShoppingCart,
+            href: "/dashboard/retailer/orders",
+          },
+          {
+            label: "Settings",
+            icon: Settings,
+            href: "/dashboard/retailer/settings",
+          },
+        ];
+
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 antialiased">
-      {/* Header - Top Bar */}
+      {/* Header - Common for both roles */}
       <header className="sticky top-0 z-10 border-b bg-white shadow-sm">
         <div className="flex h-16 items-center justify-between px-6">
           <div className="flex items-center gap-3">
@@ -48,83 +98,29 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
 
       {/* Main Content Area with Sidebar */}
       <div className="flex flex-1">
-        {/* Sidebar - Left Fixed */}
+        {/* Sidebar - Role-based items */}
         <aside className="hidden w-64 flex-shrink-0 border-r bg-white md:block">
           <nav className="mt-6 flex flex-col gap-2 px-3">
-            <Link href="/dashboard/admin/dashboard">
-              <Button
-                variant="ghost"
-                className={`w-full justify-start gap-3 ${
-                  isActive("/dashboard/admin/dashboard")
-                    ? "bg-indigo-500 text-white hover:bg-indigo-500 hover:text-white"
-                    : ""
-                }`}
-              >
-                <LayoutDashboard className="h-5 w-5" />
-                Dashboard
-              </Button>
-            </Link>
-
-            <Link href="/dashboard/admin/products">
-              <Button
-                variant="ghost"
-                className={`w-full justify-start gap-3 ${
-                  isActive("/dashboard/admin/products")
-                    ? "bg-indigo-500 text-white hover:bg-indigo-500 hover:text-white"
-                    : ""
-                }`}
-              >
-                <Package className="h-5 w-5" />
-                Products
-              </Button>
-            </Link>
-
-            <Link href="/dashboard/admin/orders">
-              <Button
-                variant="ghost"
-                className={`w-full justify-start gap-3 ${
-                  isActive("/dashboard/admin/orders")
-                    ? "bg-indigo-500 text-white hover:bg-indigo-500 hover:text-white"
-                    : ""
-                }`}
-              >
-                <ShoppingCart className="h-5 w-5" />
-                Orders
-              </Button>
-            </Link>
-
-            <Link href="/dashboard/admin/retailers">
-              <Button
-                variant="ghost"
-                className={`w-full justify-start gap-3 ${
-                  isActive("/dashboard/admin/retailers")
-                    ? "bg-indigo-500 text-white hover:bg-indigo-500 hover:text-white"
-                    : ""
-                }`}
-              >
-                <Users className="h-5 w-5" />
-                Retailers
-              </Button>
-            </Link>
-
-            <Link href="/dashboard/admin/settings">
-              <Button
-                variant="ghost"
-                className={`w-full justify-start gap-3 ${
-                  isActive("/dashboard/admin/settings")
-                    ? "bg-indigo-500 text-white hover:bg-indigo-500 hover:text-white"
-                    : ""
-                }`}
-              >
-                <Settings className="h-5 w-5" />
-                Settings
-              </Button>
-            </Link>
+            {sidebarItems.map((item) => (
+              <Link key={item.href} href={item.href}>
+                <Button
+                  variant="ghost"
+                  className={`w-full justify-start gap-3 ${
+                    isActive(item.href)
+                      ? "bg-indigo-500 text-white hover:bg-indigo-500 hover:text-white"
+                      : ""
+                  }`}
+                >
+                  <item.icon className="h-5 w-5" />
+                  {item.label}
+                </Button>
+              </Link>
+            ))}
 
             {/* Spacer */}
             <div className="my-4 border-t" />
 
-            {/* Logout button (no active state needed) */}
+            {/* Sign out - Common for both */}
             <Link href="/signin">
               <Button
                 variant="ghost"
