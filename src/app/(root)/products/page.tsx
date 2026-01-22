@@ -22,6 +22,10 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
+import { useCartStore } from "@/store/cartStore";
+import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
+import Link from "next/link";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
@@ -32,8 +36,10 @@ export default function ProductsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
-  const [cartCount, setCartCount] = useState(0);
   const itemsPerPage = 10;
+
+  // Get cart state and actions from Zustand
+  const { totalItems, addToCart, toggleCart } = useCartStore();
 
   // Fetch products from API
   useEffect(() => {
@@ -43,19 +49,16 @@ export default function ProductsPage() {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      // Build query parameters
       const params = new URLSearchParams({
         page: page.toString(),
         limit: itemsPerPage.toString(),
         search: search,
       });
 
-      // Add category filter
       if (selectedCategories.length > 0) {
         params.append("categories", selectedCategories.join(","));
       }
 
-      // Add price range filter
       params.append("minPrice", priceRange[0].toString());
       params.append("maxPrice", priceRange[1].toString());
 
@@ -71,6 +74,7 @@ export default function ProductsPage() {
       }
     } catch (error) {
       console.error("Error fetching products:", error);
+      toast.error("Failed to load products");
     } finally {
       setLoading(false);
     }
@@ -82,21 +86,43 @@ export default function ProductsPage() {
         ? prev.filter((c) => c !== category)
         : [...prev, category],
     );
-    setPage(1); // Reset to first page when filter changes
+    setPage(1);
   };
 
   const handleSearchChange = (e) => {
     setSearch(e.target.value);
-    setPage(1); // Reset to first page when searching
+    setPage(1);
   };
 
   const handlePriceChange = (value) => {
     setPriceRange(value);
-    setPage(1); // Reset to first page when price changes
+    setPage(1);
   };
 
-  const handleAddToCart = () => {
-    setCartCount((prev) => prev + 1);
+  const handleAddToCart = (product) => {
+    if (!product.inStock) {
+      toast.error("Product is out of stock");
+      return;
+    }
+
+    // Add product to cart with MOQ as default quantity
+    addToCart(
+      {
+        _id: product._id,
+        name: product.name,
+        description: product.description,
+        category: product.category,
+        brand: product.brand,
+        images: product.images,
+        price: product.price,
+        moq: product.moq,
+        stock: product.stock,
+        selectedVariant: product.variants?.[0] || "",
+      },
+      product.moq, // Add MOQ quantity by default
+    );
+
+    toast.success(`${product.name} added to cart!`);
   };
 
   return (
@@ -123,15 +149,21 @@ export default function ProductsPage() {
               />
             </div>
 
-            <Button variant="outline" className="relative">
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              Cart
-              {cartCount > 0 && (
-                <Badge className="absolute -top-2 -right-2 px-1.5 py-0.5 text-xs">
-                  {cartCount}
-                </Badge>
-              )}
-            </Button>
+            <Link href={"/cart"}>
+              <Button
+                variant="outline"
+                className="relative"
+                onClick={toggleCart}
+              >
+                <ShoppingCart className="w-4 h-4 mr-2" />
+                Cart
+                {totalItems > 0 && (
+                  <Badge className="absolute -top-2 -right-2 px-1.5 py-0.5 text-xs">
+                    {totalItems}
+                  </Badge>
+                )}
+              </Button>
+            </Link>
           </div>
         </div>
       </header>
@@ -206,7 +238,7 @@ export default function ProductsPage() {
 
             {loading ? (
               <div className="flex items-center justify-center py-20">
-                <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+                <Spinner />
               </div>
             ) : products.length === 0 ? (
               <Card className="p-12">
@@ -290,7 +322,7 @@ export default function ProductsPage() {
                       </CardContent>
                       <CardFooter>
                         <Button
-                          onClick={handleAddToCart}
+                          onClick={() => handleAddToCart(product)}
                           disabled={!product.inStock}
                           className="w-full"
                         >
