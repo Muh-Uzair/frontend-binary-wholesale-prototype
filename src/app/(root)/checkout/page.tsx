@@ -27,6 +27,10 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+const generateOrderId = () => {
+  return Math.floor(1000 + Math.random() * 9000);
+};
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, totalPrice, clearCart } = useCartStore();
@@ -107,97 +111,59 @@ export default function CheckoutPage() {
 
     // Prepare order data
     const orderData = {
-      orderId: `ORD-${Date.now()}`,
-      timestamp: new Date().toISOString(),
-      user: {
-        id: user?._id,
-        fullName: user?.fullName,
-        email: user?.email,
-        phone: user?.phone,
-        role: user?.role,
-      },
-      items: items.map((item) => ({
-        productId: item._id,
+      orderId: generateOrderId(),
+      user: user?._id,
+      orderItems: items.map((item) => ({
+        product: item._id,
         name: item.name,
-        brand: item.brand,
-        category: item.category,
-        variant: item.selectedVariant,
+        qty: item.quantity,
         price: item.price,
-        quantity: item.quantity,
-        subtotal: item.price * item.quantity,
-        moq: item.moq,
+        image: item.images,
       })),
-      pricing: {
-        subtotal,
-        shipping,
-        total,
-        currency: "PKR",
-      },
       shippingAddress,
-      paymentDetails: {
-        cardType: paymentDetails.cardType,
-        cardNumberLast4: paymentDetails.cardNumber.slice(-4),
-        cardholderName: paymentDetails.cardholderName,
-        // Note: In production, NEVER log full card details
-      },
-      orderStatus: "confirmed",
-      paymentStatus: "paid",
+      paymentMethod: "card",
+      totalPrice: total,
+      isPaid: true,
+      paidAt: new Date(Date.now()),
+      isDelivered: false,
+      deliveredAt: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+      status: "pending",
     };
 
-    // Log the complete order details (for dummy project)
-    console.log("═══════════════════════════════════════════════");
-    console.log("🛒 ORDER PLACED SUCCESSFULLY");
-    console.log("═══════════════════════════════════════════════");
-    console.log("📦 Order Details:", JSON.stringify(orderData, null, 2));
-    console.log("═══════════════════════════════════════════════");
-    console.log("👤 User Information:");
-    console.log("   - ID:", orderData.user.id);
-    console.log("   - Name:", orderData.user.fullName);
-    console.log("   - Email:", orderData.user.email);
-    console.log("   - Phone:", orderData.user.phone);
-    console.log("═══════════════════════════════════════════════");
-    console.log("📋 Cart Items:");
-    orderData.items.forEach((item, idx) => {
-      console.log(`   ${idx + 1}. ${item.name}`);
-      console.log(`      - Brand: ${item.brand}`);
-      console.log(`      - Variant: ${item.variant}`);
-      console.log(`      - Price: Rs. ${item.price}`);
-      console.log(`      - Quantity: ${item.quantity}`);
-      console.log(`      - Subtotal: Rs. ${item.subtotal}`);
-    });
-    console.log("═══════════════════════════════════════════════");
-    console.log("💰 Payment Summary:");
-    console.log("   - Subtotal: Rs.", orderData.pricing.subtotal);
-    console.log("   - Shipping: Rs.", orderData.pricing.shipping);
-    console.log("   - Total: Rs.", orderData.pricing.total);
-    console.log("═══════════════════════════════════════════════");
-    console.log("🚚 Shipping Address:");
-    console.log("   - Name:", orderData.shippingAddress.fullName);
-    console.log("   - Phone:", orderData.shippingAddress.phone);
-    console.log("   - Address:", orderData.shippingAddress.address);
-    console.log("   - City:", orderData.shippingAddress.city);
-    console.log("   - Postal Code:", orderData.shippingAddress.postalCode);
-    console.log("   - Country:", orderData.shippingAddress.country);
-    console.log("═══════════════════════════════════════════════");
-    console.log("💳 Payment Information:");
-    console.log(
-      "   - Card Type:",
-      orderData.paymentDetails.cardType.toUpperCase(),
-    );
-    console.log(
-      "   - Last 4 Digits:",
-      orderData.paymentDetails.cardNumberLast4,
-    );
-    console.log("   - Cardholder:", orderData.paymentDetails.cardholderName);
-    console.log("═══════════════════════════════════════════════");
-    console.log("✅ Order Status:", orderData.orderStatus);
-    console.log("✅ Payment Status:", orderData.paymentStatus);
-    console.log("═══════════════════════════════════════════════\n\n");
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/orders`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            orderData,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Unable to create order");
+      }
+
+      const { data } = await response.json();
+
+      toast.success("Order created successfully!");
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message || "Login failed");
+      } else {
+        toast.error("Something went wrong");
+      }
+    }
 
     // Show success message
-    toast.success("Order placed successfully! Check console for details.", {
-      duration: 5000,
-    });
+    // toast.success("Order placed successfully! Check console for details.", {
+    //   duration: 5000,
+    // });
 
     // Clear cart
     clearCart();
@@ -205,9 +171,9 @@ export default function CheckoutPage() {
     setIsProcessing(false);
 
     // Redirect to success page (you can create this later)
-    setTimeout(() => {
-      router.push("/");
-    }, 2000);
+    // setTimeout(() => {
+    //   router.push("/");
+    // }, 2000);
   };
 
   if (items.length === 0) {
